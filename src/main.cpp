@@ -4,6 +4,7 @@
 #include <Button.h>
 #include <Sensors.cpp>
 #include <Filters.cpp>
+#include <MidiTools.cpp>
 
 // --- DEFINING ALL PINS ---
 
@@ -23,23 +24,26 @@
 
 // --- MIDI Definitions ---
 
-#define MIDI_CHANNEL 1
+#ifndef MIDI_CHANNEL
+    #define MIDI_CHANNEL 1
+#endif
 
 // --- SETUP ---
 
-// RotaryEncoder encoder(ROTARY_PIN_A, ROTARY_PIN_B, RotaryEncoder::LatchMode::TWO03);
-// Button button(BUTTON_PIN);
+RotaryEncoder encoder(ROTARY_PIN_A, ROTARY_PIN_B, RotaryEncoder::LatchMode::TWO03);
+//Button button(BUTTON_PIN);
 
 
 void setup() {
     Serial.begin(9600);
     usbMIDI.begin();
     // Sensor setup
-    // setupUltraSonic(ULTRA_SONIC_PIN_A, ULTRA_SONIC_PIN_B);
-    // setupVelostat(VELO_PIN);
-    // setupLDR(LDR_PIN);
-    // calibrateLDR(LDR_PIN);
+    setupUltraSonic(ULTRA_SONIC_PIN_A, ULTRA_SONIC_PIN_B);
+    setupVelostat(VELO_PIN);
+    setupLDR(LDR_PIN);
+    calibrateLDR(LDR_PIN);
     setupPot(POT_PIN);
+    setupButton(BUTTON_PIN);
 }
 
 // --- LOOP ---
@@ -47,34 +51,71 @@ void setup() {
 void loop() {
     // Serial.print("\nVelostat:\t");
     // Serial.print(readVelostat(VELO_PIN));
+
+    // VELO
+    sendLoggedMidiControl(
+        "Velo",
+        map(readVelostat(VELO_PIN), 600, 30, 0, 127),
+        13
+    );
     
     // Serial.print("\nLDR:\t");
     // int ldr_val = readLDR(LDR_PIN);
     // Serial.print(ldr_val);
-    // usbMIDI.sendControlChange(14, map(ldr_val, 0, 1024, 0, 127), MIDI_CHANNEL);
 
-    // Serial.print("\ncalLDR:\t");
-    // Serial.print(readCalibratedLDR(LDR_PIN));
+    // LDR
+    sendLoggedMidiControl(
+        "LDR",
+        map(readCalibratedLDR(LDR_PIN), 0, 700, 0, 127),
+        14
+    );
 
     // Serial.print("\nButton:\t");
-    // Serial.print(button.pressed());
+    // Serial.print(digitalRead(BUTTON_PIN));
+
+    // Button
+    sendLoggedMidiControl(
+        "Button",
+        readButton(BUTTON_PIN) * 127,
+        15
+    );
 
     // encoder.tick();
     // Serial.print("\nRotary(RPM):\t");
     // Serial.print(encoder.getRPM());
 
-    Serial.print("\nPotmeter:\t");
-    int pot_val = readPot(POT_PIN);
-    Serial.print(pot_val);
-    usbMIDI.sendControlChange(14, map(pot_val, 0, 1024, 0, 127), MIDI_CHANNEL);
+    encoder.tick();
+    sendLoggedMidiControl(
+        "Rotary",
+        map(encoder.getRPM(), 0, 28, 0, 127),
+        16
+    );
+
+    // Serial.print("\nPotmeter:\t");
+    // int pot_val = readPot(POT_PIN);
+    // Serial.print(pot_val);
+    //usbMIDI.sendControlChange(14, map(pot_val, 0, 1024, 0, 127), MIDI_CHANNEL);
+
+    // POTMETER
+    sendLoggedMidiControl(
+        "Potmeter",
+        map(readPot(POT_PIN), 0, 1024, 0, 127),
+        17
+    );
 
     // Serial.print("\nUltra Sonic:\t");
     // Serial.print(readUltraSonic(ULTRA_SONIC_PIN_A, ULTRA_SONIC_PIN_B));
 
-    // Serial.print("\n \n \n");
+    // Ultra sonic
+    sendLoggedMidiControl(
+        "Ultra Sonic",
+        map(readUltraSonic(ULTRA_SONIC_PIN_A, ULTRA_SONIC_PIN_B), 3, 30, 0, 127),
+        18
+    );
 
-    //Serial.println("note");
-    //usbMIDI.sendNoteOn(42, 100, MIDI_CHANNEL);
+    Serial.print("\n \n \n");
 
-    delay(10);
+    //sendMidiNote(42);
+
+    delay(100);
 }

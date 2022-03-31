@@ -14,6 +14,16 @@ int readVelostat(int pin) {
     return val;
 }
 
+// --- BUTTON ---
+
+void setupButton(int pin) {
+	pinMode(pin, OUTPUT);
+}
+
+int readButton(int pin) {
+	return digitalRead(pin);
+}
+
 // --- ULTRA SONIC SENSOR ---
 
 void setupUltraSonic(int echoPin, int trigPin) {
