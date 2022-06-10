@@ -14,16 +14,6 @@ int readVelostat(int pin) {
     return val;
 }
 
-// --- BUTTON ---
-
-void setupButton(int pin) {
-	pinMode(pin, OUTPUT);
-}
-
-int readButton(int pin) {
-	return digitalRead(pin);
-}
-
 // --- ULTRA SONIC SENSOR ---
 
 void setupUltraSonic(int echoPin, int trigPin) {
@@ -55,19 +45,22 @@ void setupLDR(int pin) {
 }
 
 int readLDR(int pin) {
-	int val = analogRead(pin);
+	int val = analogRead(pin) * 0.125;
 	return val;
 }
 
 // calibrated LDR read
 
-int calibrationValue = 0;
-void calibrateLDR(int pin) {
-	calibrationValue = readLDR(pin);
+int calibrationValues[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+void calibrateLDR(int pin, u_int8_t idx) {
+	calibrationValues[idx] = readLDR(pin);
 }
 
-int readCalibratedLDR(int pin) {
-	return (int) map(readLDR(pin), calibrationValue, 1024, 0, 1024);
+int readCalibratedLDR(int pin, u_int8_t idx) {
+	return (int) 
+		constrain(
+			map(readLDR(pin), calibrationValues[idx], 1024, 0, 127),
+		0, 127);
 }
 
 // --- Potmeter ---
@@ -77,5 +70,5 @@ void setupPot(int pin) {
 }
 
 int readPot(int pin) {
-	return analogRead(pin);
+	return (int) analogRead(pin) * 0.125;
 }

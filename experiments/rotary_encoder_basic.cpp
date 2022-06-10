@@ -2,8 +2,6 @@
 #include <Sensors.cpp>
 #include <RotaryEncoder.h>
 
-#define VELO_PIN 14
-
 #define R_PIN_1 14
 #define R_PIN_2 15
 
@@ -13,7 +11,6 @@ RotaryEncoder encoder(R_PIN_1, R_PIN_2, RotaryEncoder::LatchMode::TWO03);
 
 void setup() {
     Serial.begin(9600);
-    //setupVelostat(VELO_PIN);
 }
 
 void loop() {
@@ -26,8 +23,5 @@ void loop() {
     Serial.print("\t RPM: ");
     Serial.print(encoder.getRPM());
 
-    //int val = readVelostat(VELO_PIN);
-    //float mval = 1.0 - (val/1023.0);
-
-    delay(10);
+    delay(1);
 }
